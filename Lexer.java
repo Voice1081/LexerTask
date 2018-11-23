@@ -30,13 +30,4 @@ public class Lexer {
         }
         return tokens;
     }
-
-    public static void main(String[] args){
-        Lexer lex = new Lexer();
-        lex.register(new FloatReader());
-        lex.register(new TraditionalCommentReader());
-        lex.register(new EndOfLineCommentReader());
-        lex.tokenize("334e1-0f");
-        System.out.println(lex.tokenize("123+123f //sdfsdf"));
-    }
 }

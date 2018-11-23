@@ -1,79 +1,46 @@
 import java.util.*;
 public abstract class IReadable {
     private String type;
-    private String activeState;
-    private String[] prefixes;
-    private HashSet<Character> suffixes;
-    private HashMap<String, HashSet<Character>> parts;
-    private HashMap<Character, String> states;
+    private String currentState;
+    private HashMap<String, HashMap<String, String>> statesMatrix;
+    private HashSet<String> terminalStates;
 
     protected void setType(String type){this.type = type;}
     protected String getType(){return type;}
-    protected void setActiveState(String state){activeState = state;}
-    protected String getActiveState(){return activeState;}
-    protected void setPrefixes(String...prefixes){this.prefixes = prefixes;}
-    protected String[] getPrefixes(){return prefixes;}
-    protected void setSuffixes(Character...suffixes){this.suffixes = new HashSet<>(Arrays.asList(suffixes));}
-    protected HashMap<String, HashSet<Character>> getParts(){return parts;}
-    protected void setParts(HashMap<String, HashSet<Character>> parts){this.parts = parts;}
-    protected HashMap<Character, String> getStates(){return states;}
-    protected void setStates(HashMap<Character, String> states){this.states = states;}
-    protected HashSet<Character> getSuffixes(){return suffixes;}
 
-    protected boolean isStart(String input){
-        for(String p: getPrefixes()){
-            if (input.startsWith(p)){
-                setActiveState("start");
-                return true;
-            }
-        }
-        return false;
-    }
-    protected boolean isEnding(Character ch){
-        if(getSuffixes().contains(ch)){
-            setActiveState("end");
-            return true;
-        }
-        return false;
-    }
+    protected void setCurrentState(String state){currentState = state;}
+    protected String getCurrentState(){return currentState;}
 
-    protected boolean isPart(Character ch){
-        return getParts().get(getActiveState()).contains(ch);
-    }
+    public HashMap<String, HashMap<String, String>> getStatesMatrix() { return statesMatrix; }
+    public void setStatesMatrix(HashMap<String, HashMap<String, String>> statesMatrix) { this.statesMatrix = statesMatrix; }
 
-    protected boolean changeState(Character ch){
-        if (states.containsKey(ch)){
-            setActiveState(states.get(ch));
-            return true;
-        }
-        return false;
-    }
+    public HashSet<String> getTerminalStates() { return terminalStates; }
+    public void setTerminalStates(HashSet<String> terminalStates) { this.terminalStates = terminalStates; }
+
 
     protected abstract Object makeValue(String token);
 
+    protected abstract String interpretChar(Character ch);
+
     protected Token tryGetToken(String input){
-        if(!isStart(input)) return null;
+
+        setCurrentState("start");
         int i = 0;
         StringBuilder token = new StringBuilder();
-        while(getActiveState() != "end" && i < input.length()){
+        while(i < input.length()) {
             Character ch = input.charAt(i);
-            if(changeState(ch)){
+            String interpreted = interpretChar(ch);
+            if (getStatesMatrix().get(getCurrentState()).containsKey(interpreted)) {
+                setCurrentState(getStatesMatrix().get(getCurrentState()).get(interpreted));
                 token.append(ch);
-                i++;
-                continue;
-            }
-            if(isEnding(ch)){
-                break;
-            }
-            if(isPart(ch))
-                token.append(ch);
-            else return null;
+            } else break;
             i++;
         }
-        if(getActiveState() != "end") return null;
+        if(!getTerminalStates().contains(getCurrentState())) return null;
         String str = token.toString();
-        return new Token(type, str, makeValue(str));
+        return new Token(getType(), str, makeValue(str));
     }
+
 
 
 }
