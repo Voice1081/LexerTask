@@ -26,18 +26,26 @@ public abstract class IReadable {
 
         setCurrentState("start");
         int i = 0;
+        int lastTerminalState = -1;
         StringBuilder token = new StringBuilder();
         while(i < input.length()) {
             Character ch = input.charAt(i);
             String interpreted = interpretChar(ch);
+            if(getTerminalStates().contains(getCurrentState())) lastTerminalState = i;
             if (getStatesMatrix().get(getCurrentState()).containsKey(interpreted)) {
                 setCurrentState(getStatesMatrix().get(getCurrentState()).get(interpreted));
                 token.append(ch);
             } else break;
             i++;
         }
-        if(!getTerminalStates().contains(getCurrentState())) return null;
-        String str = token.toString();
+        String str;
+        if(!getTerminalStates().contains(getCurrentState())){
+            if(lastTerminalState != -1)
+                str = token.substring(0, lastTerminalState);
+            else return null;
+        }
+        else
+            str = token.toString();
         return new Token(getType(), str, makeValue(str));
     }
 

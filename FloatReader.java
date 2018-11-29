@@ -63,9 +63,4 @@ public class FloatReader extends IReadable {
         if(ch == '.') return ".";
         return ch.toString();
     }
-
-    public static void main(String[] args){
-        FloatReader r = new FloatReader();
-        System.out.println(r.tryGetToken("00.1e01"));
-    }
 }
